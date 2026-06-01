@@ -112,6 +112,7 @@ export const logout = async (req, res) => {
     return res.sendStatus(204);
     
   } catch (error) {
-    
+    console.error('Error when logout', error);
+    return res.status(500).json({ message: 'System error' });
   }
 }
