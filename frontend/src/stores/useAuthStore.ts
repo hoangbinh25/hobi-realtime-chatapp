@@ -9,7 +9,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: false,
 
   clearState: () => {
-    set({accessToken: null, user: null, loading: false})
+    set({ accessToken: null, user: null, loading: false });
+  },
+
+  setAccessToken: (accessToken) => {
+    set({ accessToken });
   },
 
   signUp: async (username, password, email, firstName, lastName) => {
@@ -27,28 +31,66 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  signIn: async(username, password) => {
+  signIn: async (username, password) => {
     try {
-      set({loading: true});
+      set({ loading: true });
 
-      const {accessToken} = await authService.signIn(username, password);
-      set({accessToken});
+      const { accessToken } = await authService.signIn(username, password);
+      get().setAccessToken(accessToken);
+
+      await get().fetchMe();
 
       toast.success('Chào mừng bạn quay trở lại');
     } catch (error) {
       console.error(error);
       toast.error('Đăng nhập không thành công');
+    } finally {
+      set({ loading: false });
     }
   },
 
-  signOut: async() => {
+  signOut: async () => {
     try {
       get().clearState();
       await authService.signOut();
-      toast.success("Logout thành công");
+      toast.success('Logout thành công');
     } catch (error) {
       console.error(error);
       toast.error('Lỗi xảy xảy ra khi đăng xuất. Vui lòng thử lại!');
     }
-  }
+  },
+
+  fetchMe: async () => {
+    try {
+      set({ loading: true });
+      const user = await authService.fetchMe();
+      set({ user });
+    } catch (error) {
+      console.error(error);
+      set({ user: null, accessToken: null });
+      toast.error('Lỗi khi lấy dữ liệu người dùng. Hãy thử lại');
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  refresh: async () => {
+    try {
+      set({ loading: true });
+      const { user, fetchMe, setAccessToken } = get();
+      const accessToken = await authService.refresh();
+
+      setAccessToken(accessToken);
+
+      if (!user) {
+        await fetchMe();
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+      get().clearState();
+    } finally {
+      set({ loading: false });
+    }
+  },
 }));
