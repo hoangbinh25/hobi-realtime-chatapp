@@ -1,0 +1,28 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: hobi-mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    container_name: hobi-backend
+    ports:
+      - '5001:5001'
+    env_file:
+      - ./backend/.env
+    environment:
+      MONGODB_CONNECTIONSTRING: mongodb://mongo:27017/hobi
+      PORT: 5001
+      CLIENT_URL: http://localhost:5173
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+volumes:
+  mongo_data:

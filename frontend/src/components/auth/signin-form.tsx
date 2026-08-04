@@ -17,7 +17,7 @@ const signInSchema = z.object({
 type SignUpFormValues = z.infer<typeof signInSchema>;
 
 export function SignInForm({ className, ...props }: React.ComponentProps<'div'>) {
-  const {signIn} = useAuthStore();
+  const { signIn } = useAuthStore();
   const navigate = useNavigate();
 
   const {
@@ -29,9 +29,9 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'div'>)
   });
 
   const onSubmit = async (data: SignUpFormValues) => {
-    const {username, password} = data;
-    await signIn(username, password);;
-    navigate("/")
+    const { username, password } = data;
+    await signIn(username, password);
+    navigate('/');
   };
 
   return (
